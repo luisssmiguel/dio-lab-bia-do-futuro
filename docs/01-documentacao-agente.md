@@ -1,89 +1,63 @@
-# Documentação do Agente
+# 📚 Documentação do Agente: ByteSafe Advisor
 
-## Caso de Uso
+Este documento detalha o propósito, a arquitetura e as diretrizes de segurança do **ByteSafe Advisor**, um assistente de voz especializado em gestão financeira pessoal.
 
-### Problema
-> Qual problema financeiro seu agente resolve?
+---
 
-A dificuldade de manter um controle financeiro rigoroso em tempo real. Muitas pessoas desistem de anotar gastos diários devido à burocracia de abrir aplicativos, digitar valores e categorizar despesas manualmente, o que gera furos no orçamento no final do mês.
+## 🎯 Caso de Uso
 
-### Solução
-> Como o agente resolve esse problema de forma proativa?
+### O Problema
+A manutenção de um controle financeiro rigoroso em tempo real é frequentemente abandonada devido à burocracia. Abrir aplicativos, navegar por menus e digitar valores manualmente cria uma fricção que gera furos no orçamento e desmotivação.
 
-O **ByteSafe Voice Advisor** resolve esse problema através de uma interface **Voice-First**. O agente utiliza Processamento de Linguagem Natural (NLP) para ouvir comandos de voz, extrair automaticamente o valor e a categoria da despesa (ex: "Gastei 50 reais com almoço") e atualizar o saldo instantaneamente em uma base de dados local, oferecendo feedback por voz sobre a saúde financeira.
+### A Solução
+O **ByteSafe Advisor** elimina essa barreira através de uma interface **Voice-First**. Utilizando modelos de transcrição (Whisper) e inteligência generativa (Gemini), o agente extrai valores e categorias de comandos naturais, atualiza uma base de dados local (CSV) instantaneamente e oferece feedback auditivo e visual sobre a saúde financeira do usuário.
 
 ### Público-Alvo
-> Quem vai usar esse agente?
-
-Jovens profissionais, entusiastas de tecnologia e estudantes (como Jovens Aprendizes) que precisam de agilidade e uma forma intuitiva de gerir suas finanças sem interromper suas atividades principais.
+Jovens profissionais, estudantes e entusiastas de tecnologia que buscam agilidade e uma forma intuitiva de gerir suas finanças sem interromper suas rotinas.
 
 ---
 
-## Persona e Tom de Voz
+## 👤 Persona e Tom de Voz
 
-### Nome do Agente
-**ByteSafe Advisor**
-
-### Personalidade
-> Como o agente se comporta? (ex: consultivo, direto, educativo)
-
-**Consultivo e Educativo.** O agente se comporta como um mentor financeiro digital. Ele é organizado, encorajador e focado em ajudar o usuário a atingir metas de economia.
-
-### Tom de Comunicação
-> Formal, informal, técnico, acessível?
-
-**Acessível e Direto.** Utiliza uma linguagem clara, evitando "financês" complexo, mas mantendo a seriedade que o tema dinheiro exige.
-
-### Exemplos de Linguagem
-- **Saudação:** "Olá! Sou o ByteSafe Advisor. Qual transação vamos organizar agora?"
-- **Confirmação:** "Entendido! Registrei sua despesa de R$ 35,00 em 'Alimentação'. Seu saldo atualizado é de R$ 450,00."
-- **Erro/Limitação:** "Não consegui entender o valor. Poderia repetir apenas o quanto você gastou e com o quê?"
+* **Nome do Agente:** ByteSafe Advisor
+* **Personalidade:** Consultivo e Educativo. Atua como um mentor digital que organiza dados e incentiva o hábito de poupar.
+* **Tom de Comunicação:** Acessível e Direto. Evita jargões técnicos complexos, mas mantém a seriedade necessária para o trato com dinheiro.
+* **Exemplos de Linguagem:**
+    * *"Olá Luis Miguel! Sou o ByteSafe Advisor. Qual transação vamos organizar agora?"*
+    * *"Entendido! Registrei sua despesa de R$ 35,00 em 'Alimentação'. Seu saldo atualizado é de R$ 450,00."*
 
 ---
 
-## Arquitetura
+## 🏗️ Arquitetura do Sistema
 
-### Diagrama
+### Fluxo de Dados
+1. **Entrada:** Usuário grava áudio via interface Streamlit.
+2. **Transcrição:** O modelo **OpenAI Whisper (Small)** converte o áudio em texto.
+3. **Lógica Python:** O script extrai valores via Regex e atualiza o arquivo `transacoes.csv`.
+4. **Inteligência:** O **Google Gemini API** recebe o texto e o saldo real para formatar uma resposta contextualizada.
+5. **Saída:** O Streamlit exibe o histórico de chat e atualiza a Sidebar com o novo saldo.
 
-```mermaid
-flowchart TD
-    A[Usuário/Voz] -->|Áudio| B[Interface Colab/JS]
-    B -->|Arquivo .wav| C[Whisper - Transcrição]
-    C -->|Texto| D[LLM - Processamento]
-    D -->|Consulta/Update| E[Base de Dados JSON]
-    E -->|Dados Atualizados| D
-    D -->|Resposta Texto| F[gTTS - Voz]
-    F -->|Feedback Áudio| A
-```
-
-### Componentes
-
-| Componente | Descrição |
-|------------|-----------|
-| Interface | Script Python em Google Colab com integração JavaScript para captura de microfone. |
-| LLM | Whisper (OpenAI) para Speech-to-Text e Gemini/GPT/Ollama para extração de entidades e lógica. |
-| Base de Conhecimento | Arquivo JSON estruturado que armazena o histórico de lançamentos e limites de gastos. |
-| Validação | gTTS (Google Text-to-Speech) para transformar as respostas do agente em áudio. |
+### Componentes Técnicos
+| Componente | Tecnologia |
+| :--- | :--- |
+| **Interface** | Streamlit (Python framework) |
+| **STT (Speech-to-Text)** | OpenAI Whisper |
+| **Cérebro (LLM)** | Google Gemini (Gemini 1.5 Flash) |
+| **Persistência** | Pandas & CSV (Armazenamento Local) |
+| **Audio Capture** | Audio Recorder Streamlit |
 
 ---
 
-## Segurança e Anti-Alucinação
+## 🛡️ Segurança e Anti-Alucinação
 
-### Estratégias Adotadas
+Para garantir a integridade dos dados financeiros do Luis, o agente utiliza as seguintes estratégias:
 
-[x] Contexto Estrito: O agente só responde sobre o saldo com base nos valores reais contidos no arquivo JSON.
+* **Contexto Estrito:** O agente nunca inventa o saldo. Ele sempre consulta o cálculo matemático feito pelo Python no arquivo CSV antes de responder.
+* **Filtro de Ruído:** Implementação de filtros de segurança para evitar que ruídos de áudio ou transcrições errôneas (ex: termos aleatórios) gerem lançamentos fantasmas.
+* **Admissão de Falha:** Caso o valor numérico não seja detectado na frase, o agente solicita que o usuário repita a informação de forma clara.
+* **Filtro de Escopo:** O agente ignora perguntas não relacionadas a finanças, reforçando seu papel de consultor especializado.
 
-[x] Confirmação Ativa: Para valores acima de R$ 500,00, o agente solicita uma confirmação extra antes de registrar.
-
-[x] Admissão de Falha: Caso a transcrição do Whisper seja ambígua, o agente não chuta valores; ele pede para o usuário repetir.
-
-[x] Filtro de Escopo: O agente ignora perguntas que não sejam relacionadas a finanças ou ao funcionamento do próprio sistema.
-
-### Limitações Declaradas
-> O que o agente NÃO faz?
-
-> O agente NÃO realiza transações bancárias reais (PIX, transferências ou pagamentos).
-
-> O agente NÃO acessa contas bancárias externas via API (opera apenas em base de dados simulada).
-
-> O funcionamento depende 100% de conectividade com a internet para processamento das LLMs.
+### 🚫 Limitações Declaradas
+* O agente **não** realiza transações bancárias reais (PIX ou transferências).
+* O agente **não** possui conexão direta com APIs bancárias (opera em base de dados local).
+* O processamento exige conectividade com a internet para comunicação com a API do Gemini.

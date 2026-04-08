@@ -1,71 +1,63 @@
-# Avaliação e Métricas
+# 📊 Avaliação e Métricas: ByteSafe Advisor
 
-## Como Avaliar seu Agente
-
-A avaliação pode ser feita de duas formas complementares:
-
-1. **Testes estruturados:** Você define perguntas e respostas esperadas;
-2. **Feedback real:** Pessoas testam o agente e dão notas.
+Este documento detalha o processo de validação, controle de qualidade e métricas de desempenho do **ByteSafe Advisor**, garantindo que o assistente seja preciso no cálculo de saldo e resiliente a erros de entrada.
 
 ---
 
-## Métricas de Qualidade
+## 🎯 Estratégia de Avaliação
 
-| Métrica | O que avalia | Exemplo de teste |
-|---------|--------------|------------------|
-| **Assertividade** | O agente respondeu o que foi perguntado? | Perguntar o saldo e receber o valor correto |
-| **Segurança** | O agente evitou inventar informações? | Perguntar algo fora do contexto e ele admitir que não sabe |
-| **Coerência** | A resposta faz sentido para o perfil do cliente? | Sugerir investimento conservador para cliente conservador |
-
-> [!TIP]
-> Peça para 3-5 pessoas (amigos, família, colegas) testarem seu agente e avaliarem cada métrica com notas de 1 a 5. Isso torna suas métricas mais confiáveis! Caso use os arquivos da pasta `data`, lembre-se de contextualizar os participantes sobre o **cliente fictício** representado nesses dados.
+A avaliação do agente é realizada através de um modelo híbrido:
+1. **Testes de Caixa Preta:** Validação das saídas do Chat e Sidebar com base em entradas variadas.
+2. **Integridade de Persistência:** Verificação física dos registros no arquivo `data/transacoes.csv`.
+3. **Observabilidade de Áudio:** Monitoramento da taxa de acerto do modelo Whisper para diferentes tonalidades de voz.
 
 ---
 
-## Exemplos de Cenários de Teste
+## 📈 Métricas de Qualidade
 
-Crie testes simples para validar seu agente:
-
-### Teste 1: Consulta de gastos
-- **Pergunta:** "Quanto gastei com alimentação?"
-- **Resposta esperada:** Valor baseado no `transacoes.csv`
-- **Resultado:** [ ] Correto  [ ] Incorreto
-
-### Teste 2: Recomendação de produto
-- **Pergunta:** "Qual investimento você recomenda para mim?"
-- **Resposta esperada:** Produto compatível com o perfil do cliente
-- **Resultado:** [ ] Correto  [ ] Incorreto
-
-### Teste 3: Pergunta fora do escopo
-- **Pergunta:** "Qual a previsão do tempo?"
-- **Resposta esperada:** Agente informa que só trata de finanças
-- **Resultado:** [ ] Correto  [ ] Incorreto
-
-### Teste 4: Informação inexistente
-- **Pergunta:** "Quanto rende o produto XYZ?"
-- **Resposta esperada:** Agente admite não ter essa informação
-- **Resultado:** [ ] Correto  [ ] Incorreto
+| Métrica | Descrição | Cenário de Sucesso |
+| :--- | :--- | :--- |
+| **Assertividade de Saldo** | O sistema calcula o valor exato no Python? | Saldo Sidebar == Saldo Real no CSV. |
+| **Sincronia IA-Sistema** | A IA evita alucinações matemáticas? | O "Novo Saldo" no Chat é idêntico ao valor soprado pelo Python. |
+| **Resiliência de Arquivo** | O agente se recupera caso o CSV suma? | O sistema detecta a ausência do arquivo e solicita novo saldo inicial. |
+| **Segurança de Escopo** | O agente evita temas irrelevantes? | Respostas educadas negando solicitações fora do nicho financeiro. |
 
 ---
 
-## Resultados
+## 🧪 Cenários de Teste (Checklist de Homologação)
 
-Após os testes, registre suas conclusões:
+### Teste 1: Configuração de Saldo Inicial
+* **Entrada:** "Meu saldo inicial é 1500 reais."
+* **Expectativa:** Criação do arquivo `transacoes.csv` com a flag `SALDO_INICIAL`.
+* **Resultado:** [ ] Passou [ ] Falhou
 
-**O que funcionou bem:**
-- [Liste aqui]
+### Teste 2: Registro de Gasto Dinâmico (Voz)
+* **Entrada:** (Áudio) "Gastei 80 reais na pizzaria."
+* **Expectativa:** Extração correta do valor (80.0) e categoria (Pizzaria).
+* **Resultado:** [ ] Passou [ ] Falhou
 
-**O que pode melhorar:**
-- [Liste aqui]
+### Teste 3: Validação de Override da IA
+* **Entrada:** Qualquer gasto após definição de saldo.
+* **Expectativa:** A IA deve repetir o saldo calculado pelo Python, ignorando sua própria "intuição" matemática.
+* **Resultado:** [ ] Passou [ ] Falhou
+
+### Teste 4: Tratamento de Erro (Out-of-Scope)
+* **Entrada:** "Qual a previsão do tempo para Sorocaba?"
+* **Expectativa:** Resposta padrão: "Como seu consultor ByteSafe, foco apenas em suas finanças..."
+* **Resultado:** [ ] Passou [ ] Falhou
 
 ---
 
-## Métricas Avançadas (Opcional)
+## 🛠️ Conclusões e Próximos Passos
 
-Para quem quer explorar mais, algumas métricas técnicas de observabilidade também podem fazer parte da sua solução, como:
+### O que funcionou bem:
+* A sincronização em tempo real entre o processamento do Agente e a interface Streamlit através do `st.rerun()`.
+* A persistência de dados utilizando a biblioteca Pandas para garantir que nenhum centavo seja perdido.
 
-- Latência e tempo de resposta;
-- Consumo de tokens e custos;
-- Logs e taxa de erros.
+### Pontos de Melhoria:
+* **NLP de Categoria:** Implementar uma lógica para remover preposições comuns (ex: transformar "na pizzaria" em apenas "Pizzaria") de forma mais robusta.
+* **Latência:** Otimizar o carregamento do modelo Whisper para reduzir o tempo de resposta em máquinas com menos hardware.
 
-Ferramentas especializadas em LLMs, como [LangWatch](https://langwatch.ai/) e [LangFuse](https://langfuse.com/), são exemplos que podem ajudar nesse monitoramento. Entretanto, fique à vontade para usar qualquer outra que você já conheça!
+---
+
+> **Nota:** Este projeto foi desenvolvido por **Luis Miguel Lemos da Silva** como parte do desafio de Diário Financeiro com IA.

@@ -41,8 +41,3 @@ O diferencial do ByteSafe é a **eliminação da barreira de entrada**. Ao remov
 - [x] **Problema:** Claramente definido (fricção e desistência).
 - [x] **Solução:** Demonstrada com stack tecnológica moderna (Streamlit/Python/Gemini).
 - [x] **Diferencial:** Foco em Voice-First e integração de dados real-time.
-
----
-
-> **Desenvolvido por:** Luis Miguel Lemos da Silva  
-> **Contexto:** Projeto de Diário Financeiro Inteligente - 2026

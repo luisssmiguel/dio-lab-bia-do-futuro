@@ -28,7 +28,6 @@ openai-whisper
 
 ## Como Rodar
 
-```bash
 # Criar o ambiente
 python -m venv .venv
 

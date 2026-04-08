@@ -1,54 +1,57 @@
-# 📚 Base de Conhecimento
+# 📚 Base de Conhecimento: Estrutura de Dados
 
-## Dados Utilizados
+O **ByteSafe Advisor** opera através de um ecossistema de dados local, garantindo privacidade e personalização ao utilizar os datasets presentes na pasta `data`.
 
-O ByteSafe Advisor utiliza os datasets da pasta `data` para garantir que cada resposta seja personalizada e baseada no histórico real do cliente.
+---
 
-| Arquivo | Formato | Utilização do ByteSafe Advisor |
+## 📂 Arquivos Utilizados
+
+| Arquivo | Formato | Papel no Ecossistema ByteSafe |
 | :--- | :--- | :--- |
-| `historico_atendimento.csv` | CSV | Consultar interações passadas para manter a continuidade da conversa (ex: saber se o usuário já perguntou sobre uma dívida antes). |
-| `perfil_investidor.json` | JSON | Identificar o nível de tolerância ao risco para sugerir onde poupar o dinheiro que "sobrou" no mês. |
-| `produtos_financeiros.json` | JSON | Cruzar os dados do perfil com as opções do banco para recomendar o investimento ideal via voz. |
-| `transacoes.csv` | CSV | Fonte principal de dados para o cálculo de saldo, detecção de gastos excessivos e categorização de despesas. |
+| `transacoes.csv` | CSV | **Fonte de Verdade:** Base para cálculo de saldo real, detecção de gastos e categorização automática. |
+| `perfil_investidor.json` | JSON | **Personalidade:** Define a tolerância ao risco e o tom de voz dos alertas financeiros. |
+| `produtos_financeiros.json` | JSON | **Catálogo:** Lista de investimentos recomendados quando o usuário possui saldo positivo. |
+| `historico_atendimento.csv` | CSV | **Contexto:** Armazena interações passadas para manter a continuidade do atendimento. |
 
 ---
 
-## Adaptações nos Dados
+## 🛠️ Adaptações e Lógica de Dados
 
-Os dados originais foram expandidos para incluir **metas de gastos diários** vinculadas ao perfil do investidor. 
-- Clientes com perfil "Conservador" recebem alertas mais rigorosos quando o saldo em `transacoes.csv` diminui rapidamente.
-- Adicionei um mapeamento de **sinônimos de voz** para as categorias do CSV (ex: o termo falado "comi um lanche" é mapeado para a categoria "Alimentação" presente no dataset).
+Para otimizar a experiência de voz e a precisão do Agente, implementamos as seguintes camadas lógicas:
 
----
-
-## Estratégia de Integração
-
-### Como os dados são carregados?
-Os arquivos são carregados utilizando a biblioteca **Pandas** no início da execução do script Python. Para garantir performance, os dados do `perfil_investidor.json` são mantidos em cache durante a sessão, enquanto o `transacoes.csv` é lido a cada nova inserção para garantir que o saldo falado seja sempre o mais atualizado.
-
-### Como os dados são usados no prompt?
-Utilizo uma estratégia de **Injeção de Contexto Dinâmico**. O agente não recebe o arquivo inteiro (para não gastar tokens), mas sim um resumo estruturado no **System Prompt**:
-1. O saldo é calculado somando as receitas e subtraindo as despesas do `transacoes.csv`.
-2. O perfil do investidor é extraído do JSON para definir o "tom de voz" (mais cauteloso ou mais arrojado).
-3. O histórico de atendimento é resumido para que o agente saiba o contexto das últimas 3 frases ditas pelo usuário.
+1. **Persistência de Saldo Inicial:** Diferente de uma aplicação volátil, o primeiro valor informado pelo usuário é cravado no `transacoes.csv` com a tag `SALDO_INICIAL`, servindo de âncora para todos os cálculos futuros.
+2. **Mapeamento de Sinônimos:** O agente utiliza lógica de texto para converter termos falados (ex: "comi um lanche") em categorias estruturadas (ex: "Alimentação").
+3. **Alertas por Perfil:** Clientes com perfil **Conservador** recebem alertas de sistema mais rigorosos quando o saldo diminui rapidamente, enquanto perfis **Arrojados** recebem sugestões de diversificação.
 
 ---
 
-## Exemplo de Contexto Montado
+## 🔄 Estratégia de Integração
 
-Abaixo, um exemplo de como os dados brutos são transformados em texto para a "mente" do ByteSafe Advisor:
+### 1. Carregamento e Performance
+Os dados são manipulados utilizando a biblioteca **Pandas**. Para garantir performance e evitar latência:
+* O `perfil_investidor.json` é carregado no início da sessão.
+* O `transacoes.csv` é consultado e atualizado a cada interação via `st.rerun()`, garantindo que o saldo exibido na **Sidebar** seja sempre o valor real em disco.
+
+### 2. Injeção de Contexto Dinâmico (RAG Local)
+Para economizar tokens e focar no que importa, o Agente não lê o arquivo inteiro a cada prompt. O sistema Python injeta apenas um **Resumo Estruturado** no System Prompt:
+* **Cálculo de Saldo:** O Python processa a matemática e entrega o resultado pronto para a IA.
+* **Filtro de Histórico:** Apenas as últimas transações e interações relevantes são enviadas como contexto.
+
+---
+
+## 📝 Exemplo de Prompt Injetado (Back-end)
+
+Abaixo, um exemplo de como o sistema organiza os dados brutos antes de enviá-los para o processamento do modelo Gemini:
 
 ```text
-[CONTEXTO DO SISTEMA]
-Você é o ByteSafe Advisor. 
-Dados do Cliente:
-- Nome: Luis Miguel
-- Perfil: Arrojado (extraído de perfil_investidor.json)
-- Saldo calculado: R$ 1.860,50 (baseado em transacoes.csv)
+[DADOS DO SISTEMA - VERDADE ABSOLUTA]
+Usuário: Luis Miguel
+Perfil: Arrojado (perfil_investidor.json)
+Saldo em Disco: R$ 1.860,50 (calculado via Pandas em transacoes.csv)
 
-Histórico Recente:
-- O cliente perguntou sobre 'investimentos em renda variável' na última sessão.
-- Gasto elevado detectado em: 'Eletrônicos' (R$ 1.200,00).
+[HISTÓRICO RECENTE]
+1. O usuário perguntou sobre 'Cripto' na última conversa.
+2. Alerta: Gasto elevado detectado em 'Eletrônicos'.
 
-[ENTRADA DE VOZ DO USUÁRIO]
+[ENTRADA DO USUÁRIO]
 "Quanto eu ainda posso gastar hoje?"

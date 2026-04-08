@@ -114,23 +114,26 @@ Todas as ferramentas abaixo possuem versões gratuitas:
 ```text
 📁 PROJETO-DIO/
 │
-├── 📄 README.md                      # Documentação principal
-├── 📄 agente.py                      # Cérebro do Agente (Lógica e Integração IA)
-├── 📄 app.py                         # Interface Streamlit e Fluxo principal
-├── 📄 requirements.txt               # Dependências do projeto (Pip)
-├── 📄 .env                           # Chaves de API (Variáveis de ambiente)
-│
 ├── 📁 data/                          # Base de Conhecimento (Datasets)
 │   ├── historico_atendimento.csv     # Log de interações passadas
 │   ├── perfil_investidor.json        # Contexto e preferências do usuário
-│   ├── produtos_financeiros.json     # Catálogo de serviços disponíveis
-│   └── transacoes.csv                # Registro físico de saldo e gastos
+│   ├── produtos_financeiros.json     # Catálogo de serviços e investimentos
+│   └── transacoes.csv                # Registro físico de saldo e gastos (CSV)
 │
-├── 📁 docs/                          # Documentação detalhada do desafio
+├── 📄 .env                           # Variáveis de ambiente (API Keys)
+├── 📄 agente.py                      # Cérebro do Agente (Lógica de IA e Negócio)
+├── 📄 app.py                         # Interface Web (Streamlit)
+├── 📄 requirements.txt               # Dependências do projeto para instalação
+├── 📄 testes_modelos.py              # Scripts de validação e testes unitários
+│
+├── 📁 docs/                          # Documentação técnica do desafio
 │   ├── DOCUMENTACAO.md               # Caso de uso e arquitetura
-│   ├── BASE_DE_CONHECIMENTO.md       # Estratégia de dados
-│   ├── PROMPTS.md                    # Engenharia de prompts
-│   ├── METRICAS.md                   # Avaliação e qualidade
-│   └── PITCH.md                      # Roteiro da apresentação
+│   ├── BASE_DE_CONHECIMENTO.md       # Estratégia de integração de dados
+│   ├── PROMPTS.md                    # Engenharia de prompts utilizada
+│   ├── METRICAS.md                   # Avaliação de assertividade e segurança
+│   └── PITCH.md                      # Roteiro da apresentação do projeto
 │
-└── 📄 temp_audio.wav                 # Arquivo temporário de processamento
+├── 📁 assets/                        # Recursos visuais (Imagens e Diagramas)
+│
+├── 🔊 temp_audio.wav                 # Arquivo temporário de processamento de voz
+└── 🎵 response.mp3                   # Resposta de áudio gerada (opcional)

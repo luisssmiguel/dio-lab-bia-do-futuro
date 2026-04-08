@@ -40,3 +40,4 @@ source .venv/bin/activate
 # Rodar a aplicação
 streamlit run app.py
 ```
+Link para o projeto: https://github.com/luisssmiguel/Projeto_ByteSafe
